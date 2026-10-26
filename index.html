@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio | Google Classroom</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%230d6efd%22><path d=%22M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2V8h2v9z%22/></svg>">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+    :root { --bg: #f4f5f7; --text: #202124; --border: #dadce0; --blue: #1a73e8; --green: #188038; --red: #d93025; }
+    body { background-color: var(--bg); color: var(--text); font-family: 'Roboto', Arial, sans-serif; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
+    
+    /* =========================================
+       DISFRAZ PRINCIPAL (CLASSROOM)
+       ========================================= */
+    .g-header { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 8px 24px; border-bottom: 1px solid var(--border); height: 48px; }
+    .g-header .logo { display: flex; align-items: center; gap: 12px; font-size: 22px; color: #5f6368; font-weight: 400; }
+    .g-header .user-avatar { width: 32px; height: 32px; background: var(--blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; cursor: pointer; transition: transform 0.1s; }
+    .g-header .user-avatar:active { transform: scale(0.9); }
+    
+    .container { max-width: 1000px; margin: 30px auto; padding: 0 24px; }
+    .page-title { font-size: 32px; font-weight: 400; margin-bottom: 24px; color: #202124; }
+    
+    .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-bottom: 30px; }
+    .class-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s; }
+    .class-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .class-card .header { background: var(--blue); padding: 16px; color: white; height: 90px; display: flex; flex-direction: column; justify-content: center; }
+    .class-card .header h2 { margin: 0; font-size: 20px; font-weight: 500; }
+    .class-card .header p { margin: 4px 0 0; font-size: 14px; opacity: 0.8; }
+    .class-card .body { padding: 16px; border-bottom: 1px solid var(--border); font-size: 14px; color: #5f6368; }
+    .class-card .footer { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: #5f6368; font-size: 13px; }
+    .avatar-circle { width: 32px; height: 32px; border-radius: 50%; background: #e8eaed; display: flex; align-items: center; justify-content: center; font-weight: 500; color: #5f6368; }
+    
+    .activity-feed { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 40px; }
+    .activity-feed h3 { margin: 0 0 16px; font-size: 16px; font-weight: 500; color: #202124; }
+    .feed-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f3f4; font-size: 14px; color: #5f6368; }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); margin-top: 6px; flex-shrink: 0; }
+
+    /* =========================================
+       MENÚ SECRETO (CAMUFLAJE DE GOOGLE DRIVE)
+       ========================================= */
+    #ghost-layer { position: fixed; inset: 0; background-color: #fff; z-index: 99999; display: none; flex-direction: column; }
+    
+    /* Barra superior del falso Drive */
+    .drive-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid #e0e0e0; background: #fff; }
+    .drive-header .title { font-size: 18px; font-weight: 500; color: #202124; display: flex; align-items: center; gap: 10px; }
+    .drive-header .title svg { width: 24px; height: 24px; fill: #5f6368; }
+    .drive-header .close-btn { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #5f6368; }
+    .drive-header .close-btn:hover { background: #f1f3f4; }
+
+    /* Lista de archivos falsos */
+    .drive-files { padding: 24px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+    .drive-files h4 { font-size: 14px; color: #5f6368; font-weight: 500; margin: 0 0 16px 0; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; }
+    
+    .file-item { display: flex; align-items: center; padding: 12px 16px; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-bottom: 4px; }
+    .file-item:hover { background: #f1f3f4; }
+    .file-icon { width: 24px; height: 24px; margin-right: 16px; display: flex; align-items: center; justify-content: center; }
+    .file-icon svg { width: 20px; height: 20px; }
+    .file-name { flex: 1; font-size: 14px; color: #202124; font-weight: 500; }
+    .file-meta { font-size: 12px; color: #5f6368; margin-right: 20px; }
+    .file-size { font-size: 12px; color: #5f6368; }
+
+    /* Contenedor de Iframe (Oculto hasta que se abre un archivo) */
+    #frame-container { flex: 1; width: 100%; display: none; position: relative; background: #000; }
+    #ghost-frame, #browser-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    
+    /* Barra de herramientas flotante dentro del juego */
+    .game-toolbar { position: absolute; top: 12px; right: 12px; z-index: 100000; display: flex; gap: 10px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    #frame-container:hover .game-toolbar { opacity: 1; pointer-events: auto; }
+    .game-btn { background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; backdrop-filter: blur(5px); text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+    .game-btn:hover { background: rgba(0,0,0,0.8); }
+
+    /* Navegador Web camuflado de Google Forms */
+    .browser-container { display: none; flex-direction: column; width: 100%; height: 100%; background: #f0ebf8; }
+    .browser-bar { display: flex; padding: 24px; background: #673ab7; gap: 10px; align-items: center; justify-content: center; }
+    .browser-bar input { flex: 1; max-width: 600px; padding: 12px 18px; border-radius: 4px; border: none; background: #fff; color: #202124; font-family: inherit; outline: none; font-size: 14px; }
+    .browser-bar button { padding: 12px 24px; border-radius: 4px; border: none; background: #fff; color: #673ab7; cursor: pointer; font-weight: 500; font-size: 14px; }
+    .browser-bar .btn-blue { background: #4285f4; color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================
+       DISFRAZ PRINCIPAL
+       ========================================= -->
+  <header class="g-header">
+    <div class="logo">
+      <svg focusable="false" viewBox="0 0 24 24" height="24" width="24" fill="#5f6368"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg>
+      <span>Classroom</span>
+    </div>
+    <!-- El disparador es el Avatar -->
+    <div class="user-avatar" id="secret-trigger">A</div>
+  </header>
+
+  <div class="container">
+    <h1 class="page-title">Clases</h1>
+    <div class="class-grid">
+      <div class="class-card">
+        <div class="header" style="background: var(--blue);"><h2>Biología Avanzada</h2><p>Prof. Martínez</p></div>
+        <div class="body">Tarea pendiente: Laboratorio de células</div>
+        <div class="footer"><span>Entrega mañana</span><div class="avatar-circle">M</div></div>
+      </div>
+      <div class="class-card">
+        <div class="header" style="background: var(--green);"><h2>Literatura Universal</h2><p>Prof. García</p></div>
+        <div class="body">Lectura: Capítulo 4 - El Quijote</div>
+        <div class="footer"><span>Entrega el viernes</span><div class="avatar-circle">G</div></div>
+      </div>
+      <div class="class-card">
+        <div class="header" style="background: var(--red);"><h2>Cálculo Diferencial</h2><p>Prof. López</p></div>
+        <div class="body">Problemas 1-15 página 112</div>
+        <div class="footer"><span>Entrega hoy</span><div class="avatar-circle">L</div></div>
+      </div>
+    </div>
+    <div class="activity-feed">
+      <h3>Actividad reciente</h3>
+      <div class="feed-item"><div class="feed-dot"></div><div>Prof. Martínez publicó material nuevo en Biología Avanzada.</div></div>
+      <div class="feed-item"><div class="feed-dot" style="background: var(--green);"></div><div>Literatura Universal: Foro de discusión abierto para el Capítulo 4.</div></div>
+    </div>
+  </div>
+
+  <!-- =========================================
+       MENÚ SECRETO: FALSO GOOGLE DRIVE
+       ========================================= -->
+  <div id="ghost-layer">
+    <div class="drive-header">
+      <div class="title">
+        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path></svg>
+        Mi unidad / Material de Estudio
+      </div>
+      <div class="close-btn" onclick="closeGhost()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+      </div>
+    </div>
+
+    <div class="drive-files" id="file-list">
+      <!-- Los archivos se inyectan aquí por JS -->
+    </div>
+
+    <!-- Navegador Camuflado de Google Forms -->
+    <div id="browser-container" class="browser-container">
+      <div class="browser-bar">
+        <input type="text" id="browser-url" placeholder="Escribe una pregunta o enlace..." onkeydown="if(event.key === 'Enter') navigateBrowser()">
+        <button onclick="navigateBrowser()">Enviar</button>
+        <button class="btn-blue" id="btn-direct-open" onclick="openDirect()" style="display:none;">Nueva pestaña</button>
+      </div>
+    </div>
+
+    <!-- Contenedor de Iframes -->
+    <div id="frame-container">
+      <div class="game-toolbar">
+        <button class="game-btn" onclick="backToMenu()">↩ Volver a Drive</button>
+        <a id="ghost-external" href="#" target="_blank" class="game-btn" style="display:none;">Abrir ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ==========================================
+      // TRÁFICO SEÑUELO (Simula actividad escolar)
+      // ==========================================
+      setTimeout(() => {
+        ['https://classroom.google.com', 'https://www.khanacademy.org'].forEach(url => {
+          fetch(url, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+        });
+      }, 2000);
+
+      // ==========================================
+      // ANTI-DEVTOOLS
+      // ==========================================
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
+          e.preventDefault(); return false;
+        }
+      });
+      document.addEventListener('contextmenu', e => e.preventDefault());
+
+      // ==========================================
+      // PROXY ROTATIVO
+      // ==========================================
+      const proxies = [
+        "https://api.allorigins.win/raw?url=",
+        "https://corsproxy.io/?",
+        "https://api.codetabs.com/v1/proxy?quest="
+      ];
+      let proxyIndex = 0;
+      let _current = "";
+
+      // ==========================================
+      // PAYLOAD ALTAMENTE OFUSCADO
+      // Se decodifica en tiempo de ejecución, fragmento por fragmento.
+      // ==========================================
+      // Formato: [Nombre en Base64 invertido] | [URL en Base64 invertido]
+      const _payload = [
+        { n: "M0QgbmdpbmUgUGh5c2ljcw==", u: "L3RpdGUuc2l0ZS9sYXV0YS5sYXV0YS9kZXRzd2Flc21uZi8vOnNwdHRo", d: "Documento PDF · 2.4 MB" },
+        { n: "bWlTIGRoYXRhbSAmIG1oeXRoUg==", u: "L3RpdGUuc2l0ZS9sYXV0YS5sYXV0YS9kZy8vOnNwdHRo", d: "Documento PDF · 1.1 MB" },
+        { n: "YmFMI G11dG5hdVE=", u: "L3BwYS5oY3Jhc2guY3Jhc2hiYXNoLy86c3B0dGg=", d: "Documento PDF · 4.2 MB" },
+        { n: "dHNlVCBjaXRlbmlL", u: "L2VsaW5vLjN0YmxsYWJub2dhcmQvLzpzcHR0aA==", d: "Documento PDF · 3.0 MB" },
+        { n: "ZWx6enVQIGNpZ29M", u: "L3lhbHA/b2xzdG9vbC5zcmV2aWxvLy86c3B0dGg=", d: "Documento PDF · 800 KB" }
+      ];
+
+      // Función de decodificación: Invierte el string y luego aplica Base64
+      function decode(str) {
+        try {
+          const reversed = str.split('').reverse().join('');
+          return atob(reversed);
+        } catch(e) { return ""; }
+      }
+
+      let _origTitle = document.title;
+      let _origIcon = document.querySelector("link[rel='icon']").href;
+      let _clicks = 0, _timer = null;
+
+      // ==========================================
+      // DISPARADOR: 5 CLICS EN EL AVATAR
+      // ==========================================
+      document.getElementById('secret-trigger').addEventListener('click', function() {
+        _clicks++;
+        if (_timer) clearTimeout(_timer);
+        _timer = setTimeout(function() { _clicks = 0; }, 1000); // Ventana de 1 segundo
+
+        if (_clicks >= 5) {
+          _clicks = 0;
+          openGhost();
+        }
+      });
+
+      // Atajo de teclado de emergencia (Ctrl + Shift + Espacio)
+      document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.code === 'Space') { e.preventDefault(); openGhost(); }
+        if (e.key === 'Escape' && document.getElementById('ghost-layer').style.display === 'flex') { closeGhost(); }
+      });
+
+      // ==========================================
+      // LÓGICA DEL FALSO DRIVE
+      // ==========================================
+      function openGhost() {
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+
+        // 1. Inyectar Navegador (Disfrazado de Formulario)
+        const browserFile = document.createElement('div');
+        browserFile.className = 'file-item';
+        browserFile.innerHTML = `
+          <div class="file-icon" style="color: #673ab7;">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path></svg>
+          </div>
+          <div class="file-name">Formulario de Investigación Web</div>
+          <div class="file-meta">Google Forms</div>
+          <div class="file-size">--</div>
+        `;
+        browserFile.onclick = openBrowser;
+        list.appendChild(browserFile);
+
+        // 2. Inyectar Juegos (Disfrazados de PDFs)
+        _payload.forEach(item => {
+          try {
+            const name = decode(item.n);
+            const url = decode(item.u);
+            
+            // Validación de URL para evitar errores
+            if (!url.startsWith('http')) return;
+
+            const file = document.createElement('div');
+            file.className = 'file-item';
+            file.innerHTML = `
+              <div class="file-icon" style="color: #d93025;">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>
+              </div>
+              <div class="file-name">${name}</div>
+              <div class="file-meta">Material de estudio</div>
+              <div class="file-size">${item.d}</div>
+            `;
+            file.onclick = () => loadGame(url);
+            list.appendChild(file);
+          } catch(e) {}
+        });
+
+        document.getElementById('ghost-layer').style.display = 'flex';
+        document.getElementById('frame-container').style.display = 'none';
+        document.getElementById('browser-container').style.display = 'none';
+        
+        // Cambio de título sutil
+        document.title = "Mi unidad - Google Drive";
+      }
+
+      // ==========================================
+      // NAVEGADOR (Disparado desde el falso Formulario)
+      // ==========================================
+      function openBrowser() {
+        document.getElementById('file-list').style.display = 'none';
+        document.getElementById('browser-container').style.display = 'flex';
+        document.getElementById('frame-container').style.display = 'block';
+        document.getElementById('btn-direct-open').style.display = 'block';
+        
+        mountIframe('browser-frame');
+        document.getElementById('browser-url').focus();
+        document.title = "Formulario sin título - Google Forms";
+      }
+
+      function navigateBrowser() {
+        var input = document.getElementById('browser-url').value.trim();
+        if (!input) return;
+        var target = input;
+        if (!target.startsWith('http://') && !target.startsWith('https://')) {
+          target = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(target);
+        }
+        _current = target;
+        var frame = document.getElementById('browser-frame');
+        if (frame) {
+          frame.src = proxies[proxyIndex] + encodeURIComponent(target);
+          proxyIndex = (proxyIndex + 1) % proxies.length;
+        }
+      }
+
+      function openDirect() {
+        if (_current) window.open(_current, '_blank', 'noopener,noreferrer');
+      }
+
+      // ==========================================
+      // CARGA DE JUEGOS
+      // ==========================================
+      function loadGame(url) {
+        document.getElementById('file-list').style.display = 'none';
+        document.getElementById('browser-container').style.display = 'none';
+        document.getElementById('frame-container').style.display = 'block';
+        document.getElementById('btn-direct-open').style.display = 'none';
+        
+        var ext = document.getElementById('ghost-external');
+        ext.style.display = 'flex';
+        ext.href = url;
+
+        mountIframe('ghost-frame', url);
+        document.title = "Documento PDF - Google Drive";
+      }
+
+      function mountIframe(id, srcUrl) {
+        var container = document.getElementById('frame-container');
+        // Destruye el iframe anterior para liberar RAM
+        const oldFrame = document.getElementById(id);
+        if (oldFrame) oldFrame.remove();
+
+        var newFrame = document.createElement('iframe');
+        newFrame.id = id;
+        newFrame.src = srcUrl || 'about:blank';
+        newFrame.allow = "fullscreen; autoplay; gamepad; clipboard-write; accelerometer; gyroscope";
+        newFrame.allowFullscreen = true;
+        newFrame.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups";
+        
+        container.appendChild(newFrame);
+      }
+
+      // ==========================================
+      // RETORNO Y CIERRE
+      // ==========================================
+      function backToMenu() {
+        const frame = document.getElementById('ghost-frame');
+        const bFrame = document.getElementById('browser-frame');
+        if (frame) frame.remove();
+        if (bFrame) bFrame.remove();
+        
+        document.getElementById('browser-container').style.display = 'none';
+        document.getElementById('frame-container').style.display = 'none';
+        document.getElementById('ghost-external').style.display = 'none';
+        document.getElementById('btn-direct-open').style.display = 'none';
+        document.getElementById('file-list').style.display = 'block';
+        document.getElementById('browser-url').value = '';
+        _current = "";
+        document.title = "Mi unidad - Google Drive";
+      }
+
+      function closeGhost() {
+        backToMenu();
+        document.getElementById('ghost-layer').style.display = 'none';
+        
+        // Restauración total del disfraz
+        setTimeout(function() {
+          document.title = _origTitle;
+          document.querySelector("link[rel='icon']").href = _origIcon;
+        }, 100);
+      }
+
+      // Exponer funciones al HTML
+      window.openGhost = openGhost;
+      window.closeGhost = closeGhost;
+      window.backToMenu = backToMenu;
+      window.openBrowser = openBrowser;
+      window.navigateBrowser = navigateBrowser;
+      window.openDirect = openDirect;
+    })();
+  </script>
+</body>
+</html>
